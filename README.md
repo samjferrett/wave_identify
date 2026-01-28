@@ -6,6 +6,8 @@ Repository contains the below
 
 ## wave_identify package
 
+Based on the Yang et al. (2003, 2021) identification methodology where equatorial waves are identified dynamically from zonal wind (u), meridional wind (v) and geopotential height (z) at separate pressure levels
+
 ### Prerequisites
 - numpy
 - xarray
