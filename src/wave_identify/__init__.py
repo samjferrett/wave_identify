@@ -1,7 +1,6 @@
 #%%
 import numpy as np
 import xarray as xr
-import sys
 from metpy.calc import divergence
 
 #%%
@@ -206,37 +205,3 @@ def filt_project_func(u,gh,v,
     wave_ncs = xr.merge([u_wave,v_wave,z_wave])
 
     return wave_ncs
-
-#%%
-def eg_filter():
-    '''
-    Example filter function call
-    '''
-    input_dir = '/gws/nopw/j04/forsea/users/sferrett/era5/uvz850_6h/'
-    #Load file which contains u, v, z 
-    input_fname = f'{input_dir}era5_uvz850_6h_1x1_*.nc'
-    nc = xr.open_mfdataset(input_fname)
-
-    #may need to adjust dims depending on input file to have dims time,pressure,latitude,longitude
-    nc = nc.rename({'valid_time':'time','pressure_level':'pressure'})
-    #nc = nc.rename({'lat':'latitude','lon':'longitude'}).expand_dims({'pressure':[850]}).transpose(
-    #    'time','pressure','latitude','longitude')
-    
-    wave_ncs = filt_project_func(u=nc.u,gh=nc.z,v=nc.v,freq=.25,taper_days=45)
-    
-    #optional but recommended: remove tapered data
-    wave_ncs = wave_ncs.isel(time=slice(4*45,-4*45))
-
-    #save output to individual files per wave type
-    for mode,wave in enumerate(waves):
-        if wave=='Kelvin':
-            out_nc = wave_ncs.isel(mode=mode)[['u','z']]
-            out_nc.to_netcdf('/path/to/output/Kelvin_uz.nc')
-
-            div_nc = divergence(wave_ncs.isel(mode=mode).u,xr.zeros_like(wave_ncs.isel(mode=mode).u))
-            div_nc.name='divergence'
-            div_nc.to_netcdf('/path/to/output/Kelvin_div.nc')
-        else:
-            out_nc = wave_ncs.isel(mode=mode)
-            out_nc.to_netcdf(f'/path/to/output/{wave}_uz.nc')
-            
